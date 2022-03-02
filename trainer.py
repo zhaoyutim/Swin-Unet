@@ -75,7 +75,7 @@ def trainer_palsar(args, model, snapshot_path):
             writer.add_scalar('info/total_loss', loss, iter_num)
             # writer.add_scalar('info/loss_ce', loss_ce, iter_num)
 
-            # logging.info('iteration %d : loss : %f, loss_ce: %f' % (iter_num, loss.item(), loss_ce.item()))
+            logging.info('iteration %d : loss : %f' % (iter_num, loss.item()))
 
             if iter_num % 100 == 0:
                 image = image_batch[1, 0:1, :, :]

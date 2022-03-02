@@ -59,9 +59,10 @@ def trainer_palsar(args, model, snapshot_path):
             elif platform == "darwin":
                 image_batch, label_batch = image_batch, label_batch
             outputs = model(image_batch)
-            loss_ce = bce_loss(torch.sigmoid(outputs).squeeze(1).float(), label_batch[:].float())
+            # loss_ce = bce_loss(torch.sigmoid(outputs).squeeze(1).float(), label_batch[:].float())
             loss_dice = dice_loss(torch.sigmoid(outputs), label_batch, softmax=False)
-            loss = 0.4 * loss_ce + 0.6 * loss_dice
+            # loss = 0.4 * loss_ce + 0.6 * loss_dice
+            loss = loss_dice
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()

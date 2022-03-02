@@ -9,3 +9,5 @@ scipy
 h5py
 timm
 einops
+yacs
+sklearn

@@ -55,9 +55,9 @@ class PalsarDataset(Dataset):
         if platform == "linux" or platform == "linux2":
             self.train_dataset = np.load('/geoinfo_vol1/zhao2/proj2_dataset/proj2_train.npy')
         elif platform == "darwin":
-            self.train_dataset = np.load('/geoinfo_vol1/zhao2/proj2_dataset/proj2_train.npy')
+            self.train_dataset = np.load('/Users/zhaoyu/PycharmProjects/ee_fire_monitoring/dataset/proj2_test.npy')
 
-        self.train_dataset = np.load('/Users/zhaoyu/PycharmProjects/ee_fire_monitoring/dataset/proj2_test.npy')
+        # self.train_dataset = np.load('/Users/zhaoyu/PycharmProjects/ee_fire_monitoring/dataset/proj2_test.npy')
         self.y_dataset = self.train_dataset[:,:,:,3]>0
         self.image, self.image_val, self.label, self.label_val = train_test_split(self.train_dataset[:,:,:,:3], self.y_dataset, test_size=0.2, random_state=0)
 

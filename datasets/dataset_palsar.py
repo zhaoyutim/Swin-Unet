@@ -57,7 +57,7 @@ class PalsarDataset(Dataset):
         self.image, self.image_val, self.label, self.label_val = train_test_split(self.train_dataset[:,:,:,:3], self.y_dataset, test_size=0.2, random_state=0)
 
     def __len__(self):
-        return self.train_dataset.shape[0]
+        return self.image.shape[0]
 
     def __getitem__(self, idx):
         sample = {'image': self.image[idx,:,:,:], 'label': self.label[idx,:,:]}

@@ -36,9 +36,9 @@ class RandomGenerator(object):
             image, label = random_rot_flip(image, label)
         elif random.random() > 0.5:
             image, label = random_rotate(image, label)
-        x, y = image.shape[1], image.shape[2]
+        x, y = image.shape[0], image.shape[1]
         if x != self.output_size[0] or y != self.output_size[1]:
-            image = zoom(image, (self.output_size[0] / x, self.output_size[1] / y), order=3)  # why not 3?
+            image = zoom(image, (self.output_size[0] / x, self.output_size[1] / y, 1), order=3)  # why not 3?
             label = zoom(label, (self.output_size[0] / x, self.output_size[1] / y), order=0)
         image = torch.from_numpy(image.astype(np.float32)).unsqueeze(0)
         label = torch.from_numpy(label.astype(np.float32))
@@ -52,21 +52,15 @@ class PalsarDataset(Dataset):
         self.split = split
         self.data_dir = base_dir
         self.train_dataset = np.load('/geoinfo_vol1/zhao2/proj2_dataset/proj2_train.npy')
+        # self.train_dataset = np.load('/Users/zhaoyu/PycharmProjects/ee_fire_monitoring/dataset/proj2_test.npy')
+        self.y_dataset = self.train_dataset[:,:,:,3]>0
+        self.image, self.image_val, self.label, self.label_val = train_test_split(self.train_dataset[:,:,:,:3], self.y_dataset, test_size=0.2, random_state=0)
 
     def __len__(self):
         return self.train_dataset.shape[0]
 
     def __getitem__(self, idx):
-
-        print(self.train_dataset.shape)
-        y_dataset = self.train_dataset[:,:,:,3]>0
-        x_train, x_val, y_train, y_val = train_test_split(self.train_dataset[:,:,:,:3], y_dataset, test_size=0.2, random_state=0)
-        if self.split == "train":
-            image, label = x_train, y_train
-        else:
-            image, label = x_val, y_val
-
-        sample = {'image': image, 'label': label}
+        sample = {'image': self.image[idx,:,:,:], 'label': self.label[idx,:,:]}
         if self.transform:
             sample = self.transform(sample)
         return sample

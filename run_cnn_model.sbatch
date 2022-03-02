@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --output /geoinfo_vol1/zhao2/run_logs/%J_slurm.out
 #SBATCH --error  /geoinfo_vol1/zhao2/run_logs/%J_slurm.err
-#SBATCH --mem  72GB
+#SBATCH --mem  150GB
 #SBATCH --gres gpu:4
 #SBATCH --cpus-per-task 16
 

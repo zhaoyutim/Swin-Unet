@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from tensorboardX import SummaryWriter
-from torch.nn.modules.loss import CrossEntropyLoss
+from torch.nn.modules.loss import CrossEntropyLoss, BCELoss, BCEWithLogitsLoss
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from utils import DiceLoss
@@ -41,7 +41,7 @@ def trainer_palsar(args, model, snapshot_path):
     if args.n_gpu > 1:
         model = nn.DataParallel(model)
     model.train()
-    ce_loss = CrossEntropyLoss()
+    bce_loss = BCELoss()
     dice_loss = DiceLoss(num_classes)
     optimizer = optim.SGD(model.parameters(), lr=base_lr, momentum=0.9, weight_decay=0.0001)
     writer = SummaryWriter(snapshot_path + '/log')
@@ -59,8 +59,9 @@ def trainer_palsar(args, model, snapshot_path):
             elif platform == "darwin":
                 image_batch, label_batch = image_batch, label_batch
             outputs = model(image_batch)
-            loss_ce = ce_loss(outputs, label_batch[:].long())
-            loss_dice = dice_loss(outputs, label_batch, softmax=True)
+            outputs=torch.sigmoid(outputs)
+            loss_ce = bce_loss(outputs.squeeze(1).float(), label_batch[:].float())
+            loss_dice = dice_loss(outputs, label_batch, softmax=False)
             loss = 0.4 * loss_ce + 0.6 * loss_dice
             optimizer.zero_grad()
             loss.backward()
@@ -80,7 +81,7 @@ def trainer_palsar(args, model, snapshot_path):
                 image = image_batch[1, 0:1, :, :]
                 image = (image - image.min()) / (image.max() - image.min())
                 writer.add_image('train/Image', image, iter_num)
-                outputs = torch.argmax(torch.softmax(outputs, dim=1), dim=1, keepdim=True)
+                outputs = torch.argmax(torch.sigmoid(outputs, dim=1), dim=1, keepdim=True)
                 writer.add_image('train/Prediction', outputs[1, ...] * 50, iter_num)
                 labs = label_batch[1, ...].unsqueeze(0) * 50
                 writer.add_image('train/GroundTruth', labs, iter_num)

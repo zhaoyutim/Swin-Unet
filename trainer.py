@@ -15,6 +15,7 @@ from tqdm import tqdm
 from utils import DiceLoss
 from torchvision import transforms
 from utils import test_single_volume
+from sys import platform
 def trainer_palsar(args, model, snapshot_path):
     from datasets.dataset_palsar import PalsarDataset, RandomGenerator
     logging.basicConfig(filename=snapshot_path + "/log.txt", level=logging.INFO,
@@ -31,9 +32,12 @@ def trainer_palsar(args, model, snapshot_path):
 
     def worker_init_fn(worker_id):
         random.seed(args.seed + worker_id)
+    if platform == "linux" or platform == "linux2":
+        trainloader = DataLoader(db_train, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True,
+                                 worker_init_fn=worker_init_fn)
+    elif platform == "darwin":
+        trainloader = DataLoader(db_train, batch_size=batch_size, shuffle=True)
 
-    trainloader = DataLoader(db_train, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True,
-                             worker_init_fn=worker_init_fn)
     if args.n_gpu > 1:
         model = nn.DataParallel(model)
     model.train()
@@ -50,7 +54,10 @@ def trainer_palsar(args, model, snapshot_path):
     for epoch_num in iterator:
         for i_batch, sampled_batch in enumerate(trainloader):
             image_batch, label_batch = sampled_batch['image'], sampled_batch['label']
-            image_batch, label_batch = image_batch.cuda(), label_batch.cuda()
+            if platform == "linux" or platform == "linux2":
+                image_batch, label_batch = image_batch.cuda(), label_batch.cuda()
+            elif platform == "darwin":
+                image_batch, label_batch = image_batch, label_batch
             outputs = model(image_batch)
             loss_ce = ce_loss(outputs, label_batch[:].long())
             loss_dice = dice_loss(outputs, label_batch, softmax=True)

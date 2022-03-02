@@ -86,7 +86,7 @@ if __name__ == "__main__":
         'Palsar': {
             'root_path': args.root_path,
             'list_dir': '.',
-            'num_classes': 9,
+            'num_classes': 1,
         },
     }
 
